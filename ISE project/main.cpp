@@ -28,6 +28,86 @@ public:
         wide = 12;
         quiet = 40;
     }
+	void readSVG(string filename) {
+        ifstream file(filename);
+        if (!file.is_open()) {
+            cout << "Failed to open SVG." << endl;
+            return;
+        }
+
+        string line;
+        vector<int> x_coords;
+
+        // STEP 1: SCAN THE SVG (Simulating a perfect horizontal scanline)
+        while (getline(file, line)) {
+            // Find rectangles that are black
+            if (line.find("fill=\"black\"") != string::npos) {
+                int pos = line.find("x=\"");
+                if (pos != string::npos) {
+                    int end_pos = line.find("\"", pos + 3);
+                    string x_str = line.substr(pos + 3, end_pos - pos - 3);
+                    x_coords.push_back(stoi(x_str));
+                }
+            }
+        }
+        file.close();
+
+        if (x_coords.empty()) {
+            cout << "No barcode found." << endl;
+            return;
+        }
+
+        // STEP 2: RUN-LENGTH ENCODING (Calculate widths of bars and spaces)
+        vector<int> widths;
+        int current_bar_width = 1;
+
+        for (int i = 1; i < x_coords.size(); i++) {
+            // If the next black pixel is exactly 1 unit away, the bar continues
+            if (x_coords[i] == x_coords[i - 1] + 1) {
+                current_bar_width++;
+            } else {
+                // The black bar ended. Record its width.
+                widths.push_back(current_bar_width); 
+                
+                // The distance to the next black pixel is the white space width
+                int space_width = x_coords[i] - x_coords[i - 1] - 1;
+                widths.push_back(space_width); 
+                
+                // Reset bar width for the new bar
+                current_bar_width = 1;
+            }
+        }
+        // Push the very last black bar
+        widths.push_back(current_bar_width);
+
+        // STEP 3: CLASSIFICATION & DECODING
+        // Find the minimum (narrow) and maximum (wide) widths to establish a threshold
+        int min_w = widths[0], max_w = widths[0];
+        for (int w : widths) {
+            if (w < min_w) min_w = w;
+            if (w > max_w) max_w = w;
+        }
+        int threshold = (min_w + max_w) / 2;
+
+        string decoded_payload = "";
+        
+        // Code 39 logic: 9 elements per character, followed by 1 narrow space gap (skip it).
+        // Therefore, we step by 10.
+        for (int i = 0; i + 8 < widths.size(); i += 10) {
+            string pattern = "";
+            // Read 9 widths
+            for (int j = 0; j < 9; j++) {
+                if (widths[i + j] > threshold) {
+                    pattern += "1"; // Wide
+                } else {
+                    pattern += "0"; // Narrow
+                }
+            }
+            decoded_payload += decodeCharacter(pattern);
+        }
+
+        cout << "Scanned Code 39 Pattern: " << decoded_payload << endl;
+    }
 };
 
 
