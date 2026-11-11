@@ -28,6 +28,56 @@ public:
         wide = 12;
         quiet = 40;
     }
+    void generate(string payload) {
+        vector<int> row;
+
+        // 1. Left Margin
+        appendPixels(row, 0, quiet);
+        
+        // 2. Start Marker
+        encodeChar(row, code[10]);
+
+        // 3. Payload Loop
+        for (int i = 0; i < payload.length(); i++) {
+            // Must have a gap before the next character
+            appendPixels(row, 0, gap); 
+            
+            // Convert character '5' to integer index 5
+            int idx = payload[i] - '0'; 
+            encodeChar(row, code[idx]);
+        }
+
+        // 4. Stop Marker
+        appendPixels(row, 0, gap);
+        encodeChar(row, code[10]);
+
+        // 5. Right Margin
+        appendPixels(row, 0, quiet);
+
+      int height = 150;
+        ofstream img("barcode.svg");
+        
+        // Pure SVG Header
+        img << "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 " << row.size() << " " << height << "\">\n";
+        
+        // White Background
+        img << "<rect width=\"100%\" height=\"100%\" fill=\"white\"/>\n";
+        
+        // Draw black bars
+        for (int x = 0; x < row.size(); x++) {
+            if (row[x] == 1) {
+                img << "<rect x=\"" << x << "\" y=\"0\" width=\"1\" height=\"" << height << "\" fill=\"black\"/>\n";
+            }
+        }
+        
+        // Close SVG
+        img << "</svg>\n";
+        img.close();
+        
+        cout << "Generated barcode.svg. Open it directly in Chrome or Edge." << endl;
+    }
+
+
 	void readSVG(string filename) {
         ifstream file(filename);
         if (!file.is_open()) {
