@@ -28,6 +28,15 @@ public:
         wide = 12;
         quiet = 40;
     }
+    char decodeCharacter(string pattern) {
+        for (int i = 0; i < 11; i++) {
+            if (code[i] == pattern) {
+                if (i == 10) return '*';
+                return '0' + i;
+            }
+        }
+        return '?'; // Unknown pattern
+    }
     void generate(string payload) {
         vector<int> row;
 
