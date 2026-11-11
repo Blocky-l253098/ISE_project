@@ -167,6 +167,26 @@ public:
 
         cout << "Scanned Code 39 Pattern: " << decoded_payload << endl;
     }
+    /**
+ * Encodes a 9-element barcode pattern into a horizontal row of pixels.
+ *
+ * @param row     The pixel row to append the encoded elements to.
+ * @param pattern A 9-character string ('0' = narrow, '1' = wide).
+ */
+    void encodeChar(vector<int>& row, string pattern) {
+        // Iterate through the 9 alternating bar/space elements
+        for (int i = 0; i < 9; i++) {
+
+            // Even indices are black bars (1), odd indices are white spaces (0)
+            int color = (i % 2 == 0) ? 1 : 0;
+
+            // '1' means wide element, '0' means narrow element
+            int width = (pattern[i] == '1') ? wide : narrow;
+
+            // Append the calculated pixels to the row
+            appendPixels(row, color, width);
+        }
+    }
 };
 
 
