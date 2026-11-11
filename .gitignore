@@ -1,0 +1,63 @@
+# Build directories
+/Debug/
+/Release/
+/x64/
+/x86/
+bin/
+obj/
+
+# Visual Studio build results
+*.sln.docstates
+*.user
+*.aps
+*.pch
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# Visual Studio cache/options
+.vs/
+
+# Visual Studio project files
+*.vcxproj.user
+*.vcxproj.filters.user
+
+# Resharper files
+_ReSharper*/
+*.resharper
+*.resharper.user
+
+# Local History for Visual Studio
+.localhistory/
+
+# Compiled files
+*.exe
+*.dll
+*.lib
+*.obj
+*.o
+*.a
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Dependencies (if using vcpkg or similar)
+vcpkg_installed/
