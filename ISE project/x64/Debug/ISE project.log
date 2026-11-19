@@ -1,3 +1,6 @@
 ﻿  main.cpp
+D:\University\ise\ISE project\ISE project\main.cpp(1259,31): warning C4395: 'System::Drawing::Size::Width::get': member function will be invoked on a copy of the initonly data member 'AForge::Video::DirectShow::VideoCapabilities::FrameSize'
+D:\University\ise\ISE project\ISE project\main.cpp(1262,74): warning C4395: 'System::Drawing::Size::Width::get': member function will be invoked on a copy of the initonly data member 'AForge::Video::DirectShow::VideoCapabilities::FrameSize'
+D:\University\ise\ISE project\ISE project\main.cpp(1262,50): warning C4395: 'System::Drawing::Size::Width::get': member function will be invoked on a copy of the initonly data member 'AForge::Video::DirectShow::VideoCapabilities::FrameSize'
   main.obj : MSIL module encountered; incremental linking is disabled for MSIL; performing full link
   ISE project.vcxproj -> D:\University\ise\ISE project\x64\Debug\ISE project.exe

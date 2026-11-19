@@ -1,0 +1,225 @@
+ImageRuntimeVersion: v2.0.50727
+Assembly AForge, Version=2.2.5.0, Culture=neutral, PublicKeyToken=c1db6ff4eaa06aeb: 
+	hash=SHA1, flags=PublicKey
+Assembly mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089: 
+	hash=None, flags=None
+Class AForge.CommunicationBufferEventArgs: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.EventArgs
+    Void .ctor(Byte[]): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+    Void .ctor(Byte[], Int32, Int32): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Properties:
+    Int32 MessageLength 'get ' : 
+  Methods:
+    get_MessageLength(): PrivateScope, Public, HideBySig, SpecialName
+    GetMessage(): PrivateScope, Public, HideBySig
+    GetMessageString(): PrivateScope, Public, HideBySig
+Struct AForge.IntPoint: AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, Serializable, BeforeFieldInit
+  :System.ValueType
+    Void .ctor(Int32, Int32): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Int32 X : Public
+    Int32 Y : Public
+  Methods:
+    DistanceTo(IntPoint): PrivateScope, Public, HideBySig
+    SquaredDistanceTo(Point): PrivateScope, Public, HideBySig
+    op_Addition(IntPoint, IntPoint): PrivateScope, Public, Static, HideBySig, SpecialName
+    Add(IntPoint, IntPoint): PrivateScope, Public, Static, HideBySig
+    op_Subtraction(IntPoint, IntPoint): PrivateScope, Public, Static, HideBySig, SpecialName
+    Subtract(IntPoint, IntPoint): PrivateScope, Public, Static, HideBySig
+    op_Addition(IntPoint, Int32): PrivateScope, Public, Static, HideBySig, SpecialName
+    Add(IntPoint, Int32): PrivateScope, Public, Static, HideBySig
+    op_Subtraction(IntPoint, Int32): PrivateScope, Public, Static, HideBySig, SpecialName
+    Subtract(IntPoint, Int32): PrivateScope, Public, Static, HideBySig
+    op_Multiply(IntPoint, Int32): PrivateScope, Public, Static, HideBySig, SpecialName
+    Multiply(IntPoint, Int32): PrivateScope, Public, Static, HideBySig
+    op_Division(IntPoint, Int32): PrivateScope, Public, Static, HideBySig, SpecialName
+    Divide(IntPoint, Int32): PrivateScope, Public, Static, HideBySig
+    op_Equality(IntPoint, IntPoint): PrivateScope, Public, Static, HideBySig, SpecialName
+    op_Inequality(IntPoint, IntPoint): PrivateScope, Public, Static, HideBySig, SpecialName
+    Equals(Object): PrivateScope, Public, Virtual, HideBySig
+    GetHashCode(): PrivateScope, Public, Virtual, HideBySig
+    op_Implicit(IntPoint): PrivateScope, Public, Static, HideBySig, SpecialName
+    op_Implicit(IntPoint): PrivateScope, Public, Static, HideBySig, SpecialName
+    ToString(): PrivateScope, Public, Virtual, HideBySig
+    EuclideanNorm(): PrivateScope, Public, HideBySig
+Class AForge.PolishExpression: AutoLayout, AnsiClass, Class, Public, Abstract, Sealed, BeforeFieldInit
+  Methods:
+    Evaluate(String, Double[]): PrivateScope, Public, Static, HideBySig
+Struct AForge.DoubleRange: AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, Serializable, BeforeFieldInit
+  :System.ValueType
+    Void .ctor(Double, Double): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Properties:
+    Double Min 'get set' : 
+    Double Max 'get set' : 
+    Double Length 'get ' : 
+  Methods:
+    get_Min(): PrivateScope, Public, HideBySig, SpecialName
+    set_Min(Double): PrivateScope, Public, HideBySig, SpecialName
+    get_Max(): PrivateScope, Public, HideBySig, SpecialName
+    set_Max(Double): PrivateScope, Public, HideBySig, SpecialName
+    get_Length(): PrivateScope, Public, HideBySig, SpecialName
+    IsInside(Double): PrivateScope, Public, HideBySig
+    IsInside(DoubleRange): PrivateScope, Public, HideBySig
+    IsOverlapping(DoubleRange): PrivateScope, Public, HideBySig
+    ToIntRange(Boolean): PrivateScope, Public, HideBySig
+    op_Equality(DoubleRange, DoubleRange): PrivateScope, Public, Static, HideBySig, SpecialName
+    op_Inequality(DoubleRange, DoubleRange): PrivateScope, Public, Static, HideBySig, SpecialName
+    Equals(Object): PrivateScope, Public, Virtual, HideBySig
+    GetHashCode(): PrivateScope, Public, Virtual, HideBySig
+    ToString(): PrivateScope, Public, Virtual, HideBySig
+Class AForge.MessageTransferHandler: AutoLayout, AnsiClass, Class, Public, Sealed
+  :System.MulticastDelegate
+    Void .ctor(System.Object, IntPtr): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Methods:
+    Invoke(Object, CommunicationBufferEventArgs): PrivateScope, Public, Virtual, HideBySig, VtableLayoutMask
+    BeginInvoke(Object, CommunicationBufferEventArgs, AsyncCallback, Object): PrivateScope, Public, Virtual, HideBySig, VtableLayoutMask
+    EndInvoke(IAsyncResult): PrivateScope, Public, Virtual, HideBySig, VtableLayoutMask
+Struct AForge.Point: AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, Serializable, BeforeFieldInit
+  :System.ValueType
+    Void .ctor(Single, Single): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Single X : Public
+    Single Y : Public
+  Methods:
+    DistanceTo(Point): PrivateScope, Public, HideBySig
+    SquaredDistanceTo(Point): PrivateScope, Public, HideBySig
+    op_Addition(Point, Point): PrivateScope, Public, Static, HideBySig, SpecialName
+    Add(Point, Point): PrivateScope, Public, Static, HideBySig
+    op_Subtraction(Point, Point): PrivateScope, Public, Static, HideBySig, SpecialName
+    Subtract(Point, Point): PrivateScope, Public, Static, HideBySig
+    op_Addition(Point, Single): PrivateScope, Public, Static, HideBySig, SpecialName
+    Add(Point, Single): PrivateScope, Public, Static, HideBySig
+    op_Subtraction(Point, Single): PrivateScope, Public, Static, HideBySig, SpecialName
+    Subtract(Point, Single): PrivateScope, Public, Static, HideBySig
+    op_Multiply(Point, Single): PrivateScope, Public, Static, HideBySig, SpecialName
+    Multiply(Point, Single): PrivateScope, Public, Static, HideBySig
+    op_Division(Point, Single): PrivateScope, Public, Static, HideBySig, SpecialName
+    Divide(Point, Single): PrivateScope, Public, Static, HideBySig
+    op_Equality(Point, Point): PrivateScope, Public, Static, HideBySig, SpecialName
+    op_Inequality(Point, Point): PrivateScope, Public, Static, HideBySig, SpecialName
+    Equals(Object): PrivateScope, Public, Virtual, HideBySig
+    GetHashCode(): PrivateScope, Public, Virtual, HideBySig
+    op_Explicit(Point): PrivateScope, Public, Static, HideBySig, SpecialName
+    op_Implicit(Point): PrivateScope, Public, Static, HideBySig, SpecialName
+    Round(): PrivateScope, Public, HideBySig
+    ToString(): PrivateScope, Public, Virtual, HideBySig
+    EuclideanNorm(): PrivateScope, Public, HideBySig
+Struct AForge.IntRange: AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, Serializable, BeforeFieldInit
+  :System.ValueType
+    Void .ctor(Int32, Int32): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Properties:
+    Int32 Min  'get set' : 
+    Int32 Max  'get set' : 
+    Int32 Length 'get ' : 
+  Methods:
+    get_Min(): PrivateScope, Public, HideBySig, SpecialName
+    set_Min(Int32): PrivateScope, Public, HideBySig, SpecialName
+    get_Max(): PrivateScope, Public, HideBySig, SpecialName
+    set_Max(Int32): PrivateScope, Public, HideBySig, SpecialName
+    get_Length(): PrivateScope, Public, HideBySig, SpecialName
+    IsInside(Int32): PrivateScope, Public, HideBySig
+    IsInside(IntRange): PrivateScope, Public, HideBySig
+    IsOverlapping(IntRange): PrivateScope, Public, HideBySig
+    op_Implicit(IntRange): PrivateScope, Public, Static, HideBySig, SpecialName
+    op_Equality(IntRange, IntRange): PrivateScope, Public, Static, HideBySig, SpecialName
+    op_Inequality(IntRange, IntRange): PrivateScope, Public, Static, HideBySig, SpecialName
+    Equals(Object): PrivateScope, Public, Virtual, HideBySig
+    GetHashCode(): PrivateScope, Public, Virtual, HideBySig
+    ToString(): PrivateScope, Public, Virtual, HideBySig
+Class AForge.ThreadSafeRandom: AutoLayout, AnsiClass, Class, Public, Sealed, BeforeFieldInit
+  :System.Random
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+    Void .ctor(Int32): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Methods:
+    Next(): PrivateScope, Public, Virtual, HideBySig
+    Next(Int32): PrivateScope, Public, Virtual, HideBySig
+    Next(Int32, Int32): PrivateScope, Public, Virtual, HideBySig
+    NextBytes(Byte[]): PrivateScope, Public, Virtual, HideBySig
+    NextDouble(): PrivateScope, Public, Virtual, HideBySig
+Struct AForge.Range: AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, Serializable, BeforeFieldInit
+  :System.ValueType
+    Void .ctor(Single, Single): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Properties:
+    Single Min 'get set' : 
+    Single Max 'get set' : 
+    Single Length 'get ' : 
+  Methods:
+    get_Min(): PrivateScope, Public, HideBySig, SpecialName
+    set_Min(Single): PrivateScope, Public, HideBySig, SpecialName
+    get_Max(): PrivateScope, Public, HideBySig, SpecialName
+    set_Max(Single): PrivateScope, Public, HideBySig, SpecialName
+    get_Length(): PrivateScope, Public, HideBySig, SpecialName
+    IsInside(Single): PrivateScope, Public, HideBySig
+    IsInside(Range): PrivateScope, Public, HideBySig
+    IsOverlapping(Range): PrivateScope, Public, HideBySig
+    ToIntRange(Boolean): PrivateScope, Public, HideBySig
+    op_Equality(Range, Range): PrivateScope, Public, Static, HideBySig, SpecialName
+    op_Inequality(Range, Range): PrivateScope, Public, Static, HideBySig, SpecialName
+    Equals(Object): PrivateScope, Public, Virtual, HideBySig
+    GetHashCode(): PrivateScope, Public, Virtual, HideBySig
+    ToString(): PrivateScope, Public, Virtual, HideBySig
+Class AForge.Parallel: AutoLayout, AnsiClass, Class, Public, Sealed, BeforeFieldInit
+  Properties:
+    Int32 ThreadsCount 'get set' : 
+  Methods:
+    get_ThreadsCount(): PrivateScope, Public, Static, HideBySig, SpecialName
+    set_ThreadsCount(Int32): PrivateScope, Public, Static, HideBySig, SpecialName
+    For(Int32, Int32, ForLoopBody): PrivateScope, Public, Static, HideBySig
+Class AForge.Parallel+ForLoopBody: AutoLayout, AnsiClass, Class, NestedPublic, Sealed
+  :System.MulticastDelegate
+    Void .ctor(System.Object, IntPtr): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Methods:
+    Invoke(Int32): PrivateScope, Public, Virtual, HideBySig, VtableLayoutMask
+    BeginInvoke(Int32, AsyncCallback, Object): PrivateScope, Public, Virtual, HideBySig, VtableLayoutMask
+    EndInvoke(IAsyncResult): PrivateScope, Public, Virtual, HideBySig, VtableLayoutMask
+Class AForge.SystemTools: AutoLayout, AnsiClass, Class, Public, Abstract, Sealed, BeforeFieldInit
+  Methods:
+    CopyUnmanagedMemory(IntPtr, IntPtr, Int32): PrivateScope, Public, Static, HideBySig
+    CopyUnmanagedMemory(Byte*, Byte*, Int32): PrivateScope, Public, Static, HideBySig
+    SetUnmanagedMemory(IntPtr, Int32, Int32): PrivateScope, Public, Static, HideBySig
+    SetUnmanagedMemory(Byte*, Int32, Int32): PrivateScope, Public, Static, HideBySig
+Class AForge.ConnectionFailedException: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Exception
+    Void .ctor(System.String): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+Class AForge.ConnectionLostException: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Exception
+    Void .ctor(System.String): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+Class AForge.NotConnectedException: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Exception
+    Void .ctor(System.String): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+Class AForge.DeviceBusyException: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Exception
+    Void .ctor(System.String): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+Class AForge.DeviceErrorException: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Exception
+    Void .ctor(System.String): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+Struct AForge.DoublePoint: AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, Serializable, BeforeFieldInit
+  :System.ValueType
+    Void .ctor(Double, Double): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Double X : Public
+    Double Y : Public
+  Methods:
+    DistanceTo(DoublePoint): PrivateScope, Public, HideBySig
+    SquaredDistanceTo(DoublePoint): PrivateScope, Public, HideBySig
+    op_Addition(DoublePoint, DoublePoint): PrivateScope, Public, Static, HideBySig, SpecialName
+    Add(DoublePoint, DoublePoint): PrivateScope, Public, Static, HideBySig
+    op_Subtraction(DoublePoint, DoublePoint): PrivateScope, Public, Static, HideBySig, SpecialName
+    Subtract(DoublePoint, DoublePoint): PrivateScope, Public, Static, HideBySig
+    op_Addition(DoublePoint, Double): PrivateScope, Public, Static, HideBySig, SpecialName
+    Add(DoublePoint, Double): PrivateScope, Public, Static, HideBySig
+    op_Subtraction(DoublePoint, Double): PrivateScope, Public, Static, HideBySig, SpecialName
+    Subtract(DoublePoint, Double): PrivateScope, Public, Static, HideBySig
+    op_Multiply(DoublePoint, Double): PrivateScope, Public, Static, HideBySig, SpecialName
+    Multiply(DoublePoint, Double): PrivateScope, Public, Static, HideBySig
+    op_Division(DoublePoint, Double): PrivateScope, Public, Static, HideBySig, SpecialName
+    Divide(DoublePoint, Double): PrivateScope, Public, Static, HideBySig
+    op_Equality(DoublePoint, DoublePoint): PrivateScope, Public, Static, HideBySig, SpecialName
+    op_Inequality(DoublePoint, DoublePoint): PrivateScope, Public, Static, HideBySig, SpecialName
+    Equals(Object): PrivateScope, Public, Virtual, HideBySig
+    GetHashCode(): PrivateScope, Public, Virtual, HideBySig
+    op_Explicit(DoublePoint): PrivateScope, Public, Static, HideBySig, SpecialName
+    op_Explicit(DoublePoint): PrivateScope, Public, Static, HideBySig, SpecialName
+    Round(): PrivateScope, Public, HideBySig
+    ToString(): PrivateScope, Public, Virtual, HideBySig
+    EuclideanNorm(): PrivateScope, Public, HideBySig

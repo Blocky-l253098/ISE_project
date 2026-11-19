@@ -1,0 +1,2 @@
+1 123456 COLA Coca Cola 500ml count 120 15 10 49 C:\barcodes\cola.svg#
+2 234567 RICE Basmati Rice 1kg weight 350 0 20 99 C:\barcodes\rice.svg#
