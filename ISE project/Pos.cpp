@@ -92,7 +92,8 @@ public:
 
     virtual Form^ CreateBarcodeScreen()
     {
-        return gcnew BarcodeForm(gcnew Barcode());
+        // the store lets the barcode screen add / update products in Product.txt
+        return gcnew BarcodeForm(gcnew Barcode(), CreateProducts());
     }
 };
 

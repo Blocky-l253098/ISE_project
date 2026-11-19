@@ -111,10 +111,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="temp.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <Text Include="products.txt" />
   </ItemGroup>
   <ItemGroup>
@@ -127,6 +123,9 @@
     <Reference Include="AForge.Video.DirectShow">
       <HintPath>..\..\..\..\downloads\AForge.Video.DirectShow.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Pos.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

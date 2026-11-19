@@ -1,6 +1,103 @@
-﻿  main.cpp
-D:\University\ise\ISE project\ISE project\main.cpp(1259,31): warning C4395: 'System::Drawing::Size::Width::get': member function will be invoked on a copy of the initonly data member 'AForge::Video::DirectShow::VideoCapabilities::FrameSize'
-D:\University\ise\ISE project\ISE project\main.cpp(1262,74): warning C4395: 'System::Drawing::Size::Width::get': member function will be invoked on a copy of the initonly data member 'AForge::Video::DirectShow::VideoCapabilities::FrameSize'
-D:\University\ise\ISE project\ISE project\main.cpp(1262,50): warning C4395: 'System::Drawing::Size::Width::get': member function will be invoked on a copy of the initonly data member 'AForge::Video::DirectShow::VideoCapabilities::FrameSize'
-  main.obj : MSIL module encountered; incremental linking is disabled for MSIL; performing full link
-  ISE project.vcxproj -> D:\University\ise\ISE project\x64\Debug\ISE project.exe
+﻿  Pos.cpp
+C:\Users\khana\ISE_project\ISE project\Camera.h(15,17): error C2653: 'AForge': is not a class or namespace name
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(15,25): error C2871: 'Video': a namespace with this name does not exist
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(16,17): error C2653: 'AForge': is not a class or namespace name
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(16,32): error C2871: 'DirectShow': a namespace with this name does not exist
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(34,23): error C2143: syntax error: missing ';' before '^'
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(34,5): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(34,31): error C2238: unexpected token(s) preceding ';'
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(39,37): error C2061: syntax error: identifier 'NewFrameEventArgs'
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(41,34): error C2065: 'e': undeclared identifier
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(59,9): error C2065: 'VideoCapabilities': undeclared identifier
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(59,28): error C2065: 'best': undeclared identifier
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(60,36): error C2143: syntax error: missing 'in' before '^'
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(60,38): error C2065: 'cap': undeclared identifier
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(60,36): error C3192: syntax error: '^' is not a prefix operator (did you mean '*'?)
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(60,42): error C2146: syntax error: missing ')' before identifier 'in'
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(60,70): error C2187: syntax error: ')' was unexpected here
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(60,42): error C2065: 'in': undeclared identifier
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(60,45): error C2146: syntax error: missing ';' before identifier 'source'
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(60,45): error C2065: 'source': undeclared identifier
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(60,70): error C2059: syntax error: ')'
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(62,13): error C2059: syntax error: 'if'
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(65,17): error C2065: 'best': undeclared identifier
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(65,36): error C2065: 'cap': undeclared identifier
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(65,59): error C2065: 'best': undeclared identifier
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(66,17): error C2065: 'best': undeclared identifier
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(66,24): error C2065: 'cap': undeclared identifier
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(68,9): error C2059: syntax error: 'if'
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(70,5): error C2059: syntax error: '}'
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(70,5): error C2143: syntax error: missing ';' before '}'
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(74,5): error C2143: syntax error: missing ';' before '{'
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(74,5): error C2447: '{': missing function header (old-style formal list?)
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(89,9): error C2065: 'source': undeclared identifier
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(94,9): error C2065: 'source': undeclared identifier
+  (compiling source file 'Pos.cpp')
+  
+C:\Users\khana\ISE_project\ISE project\Camera.h(95,9): error C2065: 'source': undeclared identifier
+  (compiling source file 'Pos.cpp')
+  

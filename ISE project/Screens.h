@@ -5,7 +5,7 @@
 //   Ui                          small helpers that build labels, boxes, buttons
 //   StatusForm                  base form with a status line
 //   ProductText / BillText      domain object -> text for the screen
-//   BarcodeForm, ProductForm, BillForm, QuantityForm, HeldOrdersForm, OrderForm
+//   ProductDetailsForm, BarcodeForm, ProductForm, BillForm, QuantityForm, HeldOrdersForm, OrderForm
 //   IScreenFactory, MenuForm    the main menu only knows the factory interface
 //   Depends on                  interfaces of Domain.h / Services.h, Camera.h controls;
 //                               no file classes and no PosFactory
@@ -158,23 +158,162 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// Barcode generator window (increment 1)
+// Small dialog: the product details that belong to a barcode (Product.txt fields)
+// ---------------------------------------------------------------------------
+public ref class ProductDetailsForm : public Form
+{
+private:
+    String^ barcode;
+    String^ barcodeFile;
+    int productId;
+    Product^ result;
+
+    TextBox^ txtAcronym;
+    TextBox^ txtName;
+    ComboBox^ cmbUnit;
+    NumericUpDown^ numPrice;
+    NumericUpDown^ numTax;
+    NumericUpDown^ numDiscount;
+    NumericUpDown^ numQuantity;
+
+    NumericUpDown^ MakeNumber(int y, double value)
+    {
+        NumericUpDown^ num = gcnew NumericUpDown();
+        num->Location = Point(120, y);
+        num->Size = Drawing::Size(130, 23);
+        num->DecimalPlaces = 2;
+        num->Minimum = Decimal(0);
+        num->Maximum = Decimal(10000000);
+        num->Value = Decimal(Math::Min(Math::Max(value, 0.0), 10000000.0));
+        return num;
+    }
+
+public:
+    // 'existing' pre-fills the fields (a barcode that is already in Product.txt, or
+    // the details typed before); nullptr starts with empty details
+    ProductDetailsForm(String^ barcode, array<String^>^ unitNames, Product^ existing)
+    {
+        this->barcode = barcode;
+        result = nullptr;
+        productId = (existing == nullptr) ? 0 : existing->Id;
+        barcodeFile = (existing == nullptr) ? "" : existing->BarcodeFile;
+
+        this->Text = (existing == nullptr) ? "New product for barcode " + barcode
+                                           : "Product details for barcode " + barcode;
+        this->ClientSize = Drawing::Size(370, 330);
+        this->StartPosition = FormStartPosition::CenterParent;
+        this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
+        this->MaximizeBox = false;
+        this->MinimizeBox = false;
+
+        txtAcronym = Ui::MakeTextBox(120, 46, 130);
+        txtAcronym->MaxLength = Product::MaxAcronymLength;
+        txtName = Ui::MakeTextBox(120, 78, 235);
+
+        cmbUnit = gcnew ComboBox();
+        cmbUnit->Location = Point(120, 110);
+        cmbUnit->Size = Drawing::Size(130, 23);
+        cmbUnit->DropDownStyle = ComboBoxStyle::DropDownList;
+        for each(String ^ unit in unitNames)
+            cmbUnit->Items->Add(unit);
+        cmbUnit->SelectedIndex = 0;
+
+        numPrice = MakeNumber(142, (existing == nullptr) ? 0 : existing->Price);
+        numTax = MakeNumber(174, (existing == nullptr) ? 0 : existing->Tax);
+        numDiscount = MakeNumber(206, (existing == nullptr) ? 0 : existing->Discount);
+        numQuantity = MakeNumber(238, (existing == nullptr) ? 0 : existing->Quantity);
+
+        if (existing != nullptr)
+        {
+            txtAcronym->Text = existing->Acronym;
+            txtName->Text = existing->Name;
+            cmbUnit->SelectedItem = existing->Unit;
+        }
+
+        Label^ lblBarcode = Ui::MakeLabel("Barcode:  " + barcode, 12, 14);
+        lblBarcode->Font = gcnew Drawing::Font("Segoe UI", 10.0f, FontStyle::Bold);
+
+        Button^ btnOk = Ui::MakeButton("OK", 150, 288, 110, 28, gcnew EventHandler(this, &ProductDetailsForm::OnOk));
+        Button^ btnCancel = Ui::MakeButton("Cancel", 270, 288, 85, 28, nullptr);
+        btnCancel->DialogResult = System::Windows::Forms::DialogResult::Cancel;
+
+        this->Controls->Add(lblBarcode);
+        this->Controls->Add(Ui::MakeLabel("Acronym (max 8):", 12, 50));
+        this->Controls->Add(txtAcronym);
+        this->Controls->Add(Ui::MakeLabel("Name:", 12, 82));
+        this->Controls->Add(txtName);
+        this->Controls->Add(Ui::MakeLabel("Unit type:", 12, 114));
+        this->Controls->Add(cmbUnit);
+        this->Controls->Add(Ui::MakeLabel("Unit price (PKR):", 12, 146));
+        this->Controls->Add(numPrice);
+        this->Controls->Add(Ui::MakeLabel("Tax (PKR):", 12, 178));
+        this->Controls->Add(numTax);
+        this->Controls->Add(Ui::MakeLabel("Discount (PKR):", 12, 210));
+        this->Controls->Add(numDiscount);
+        this->Controls->Add(Ui::MakeLabel("Quantity in stock:", 12, 242));
+        this->Controls->Add(numQuantity);
+        this->Controls->Add(btnOk);
+        this->Controls->Add(btnCancel);
+
+        this->AcceptButton = btnOk;
+        this->CancelButton = btnCancel;
+    }
+
+    // The product typed by the cashier (valid after the dialog returned OK)
+    property Product^ Result
+    {
+        Product ^ get() { return result; }
+    }
+
+private:
+    void OnOk(Object^ sender, EventArgs^ e)
+    {
+        if (txtAcronym->Text->Trim()->Length == 0 || txtName->Text->Trim()->Length == 0)
+        {
+            Ui::Warn("Product details", "Enter the acronym and the name of the product.");
+            return;
+        }
+
+        Product^ p = gcnew Product();
+        p->Id = productId;                                  // the store gives a new product its id
+        p->Barcode = barcode;
+        p->Acronym = txtAcronym->Text->Trim();
+        p->Name = Regex::Replace(txtName->Text->Trim(), "\\s+", " ");
+        p->Unit = cmbUnit->Text;
+        p->Price = Decimal::ToDouble(numPrice->Value);
+        p->Tax = Decimal::ToDouble(numTax->Value);
+        p->Discount = Decimal::ToDouble(numDiscount->Value);
+        p->Quantity = Decimal::ToDouble(numQuantity->Value);
+        p->BarcodeFile = barcodeFile;
+
+        result = p;
+        this->DialogResult = System::Windows::Forms::DialogResult::OK;
+    }
+};
+
+// ---------------------------------------------------------------------------
+// Barcode generator window: makes the barcode AND maps it to a product line in
+// Product.txt (the details are asked on Generate, Product.txt is written on Save)
 // ---------------------------------------------------------------------------
 public ref class BarcodeForm : public StatusForm
 {
 private:
     Barcode^ barcode;
+    IProductRegistry^ registry;
     List<int>^ currentRow;
+    Product^ details;           // what the cashier typed for the barcode in the box, nullptr = not asked yet
 
     TextBox^ txtPayload;
     PictureBox^ pic;
 
 public:
-    BarcodeForm(Barcode^ barcode)
-        : StatusForm("Enter digits and click Generate (saved as <code>.svg), or load a saved barcode.")
+    BarcodeForm(Barcode^ barcode, IProductRegistry^ registry)
+        : StatusForm("Enter digits and click Generate, fill in the product details, then Save.")
     {
         this->barcode = barcode;
+        this->registry = registry;
         currentRow = nullptr;
+        details = nullptr;
         BuildUi();
     }
 
@@ -182,21 +321,23 @@ private:
     void BuildUi()
     {
         this->Text = "Code 39 Barcode Tool";
-        this->ClientSize = Drawing::Size(720, 420);
-        this->MinimumSize = Drawing::Size(560, 320);
+        this->ClientSize = Drawing::Size(790, 420);
+        this->MinimumSize = Drawing::Size(790, 320);
         this->StartPosition = FormStartPosition::CenterScreen;
 
         txtPayload = Ui::MakeTextBox(65, 14, 200);
         txtPayload->MaxLength = 30;
+        txtPayload->TextChanged += gcnew EventHandler(this, &BarcodeForm::OnPayloadChanged);
 
         Button^ btnPreview = Ui::MakeButton("Generate", 280, 12, 90, 27, gcnew EventHandler(this, &BarcodeForm::OnPreview));
-        Button^ btnSave = Ui::MakeButton("Save...", 378, 12, 90, 27, gcnew EventHandler(this, &BarcodeForm::OnSave));
-        Button^ btnLoad = Ui::MakeButton("Load...", 476, 12, 90, 27, gcnew EventHandler(this, &BarcodeForm::OnLoad));
-        Button^ btnBack = Ui::MakeButton("Back", 574, 12, 90, 27, gcnew EventHandler(this, &BarcodeForm::OnBack));
+        Button^ btnDetails = Ui::MakeButton("Details...", 378, 12, 90, 27, gcnew EventHandler(this, &BarcodeForm::OnDetails));
+        Button^ btnSave = Ui::MakeButton("Save...", 476, 12, 90, 27, gcnew EventHandler(this, &BarcodeForm::OnSave));
+        Button^ btnLoad = Ui::MakeButton("Load...", 574, 12, 90, 27, gcnew EventHandler(this, &BarcodeForm::OnLoad));
+        Button^ btnBack = Ui::MakeButton("Back", 672, 12, 90, 27, gcnew EventHandler(this, &BarcodeForm::OnBack));
 
         pic = gcnew PictureBox();
         pic->Location = Point(12, 52);
-        pic->Size = Drawing::Size(696, 330);
+        pic->Size = Drawing::Size(766, 330);
         pic->Anchor = AnchorStyles::Top | AnchorStyles::Bottom | AnchorStyles::Left | AnchorStyles::Right;
         pic->BorderStyle = BorderStyle::FixedSingle;
         pic->BackColor = Color::White;
@@ -205,6 +346,7 @@ private:
         this->Controls->Add(Ui::MakeLabel("Digits:", 12, 18));
         this->Controls->Add(txtPayload);
         this->Controls->Add(btnPreview);
+        this->Controls->Add(btnDetails);
         this->Controls->Add(btnSave);
         this->Controls->Add(btnLoad);
         this->Controls->Add(btnBack);
@@ -226,8 +368,59 @@ private:
         this->Close();
     }
 
-    // Generates the barcode and saves it right away as <code>.svg
-    // (next to Product.txt, so it matches the barcode file name of the product)
+    // Other digits = other product: the details typed for the old digits do not apply
+    void OnPayloadChanged(Object^ sender, EventArgs^ e)
+    {
+        if (details != nullptr && details->Barcode != txtPayload->Text->Trim())
+            details = nullptr;
+    }
+
+    // Asks for the product details of 'code' (pre-filled from Product.txt when the
+    // barcode is already known). Repeats until the details can be stored or the
+    // cashier cancels. true = 'details' now holds the product.
+    bool AskDetails(String^ code)
+    {
+        Product^ start = (details != nullptr && details->Barcode == code) ? details : registry->FindByBarcode(code);
+
+        while (true)
+        {
+            ProductDetailsForm^ dlg = gcnew ProductDetailsForm(code, registry->UnitNames(), start);
+            System::Windows::Forms::DialogResult answer = dlg->ShowDialog(this);
+            Product^ entered = dlg->Result;
+            delete dlg;
+
+            if (answer != System::Windows::Forms::DialogResult::OK || entered == nullptr)
+                return false;
+
+            // until the file is saved, the barcode file is the one Generate wrote
+            if (String::IsNullOrEmpty(entered->BarcodeFile))
+                entered->BarcodeFile = Path::Combine(Files::Folder, code + ".svg");
+
+            try
+            {
+                registry->Check(entered);
+                details = entered;
+                return true;
+            }
+            catch (Exception^ ex)
+            {
+                Ui::Warn("Product details", ex->Message);
+                start = entered;                // let the cashier correct what was typed
+            }
+        }
+    }
+
+    // Writes the product line (new barcode = new line, known barcode = line updated)
+    void RegisterProduct(String^ savedFile)
+    {
+        details->BarcodeFile = savedFile;
+        bool isNew = registry->Register(details);
+        SetStatus((isNew ? "Product added to Product.txt: " : "Product updated in Product.txt: ") +
+            details->Acronym + " (" + details->Barcode + ") - file: " + savedFile);
+    }
+
+    // Generates the barcode, saves it right away as <code>.svg (next to Product.txt)
+    // and asks for the product details that go with it
     void OnPreview(Object^ sender, EventArgs^ e)
     {
         try
@@ -239,10 +432,33 @@ private:
             String^ path = Path::Combine(Files::Folder, code + ".svg");
             barcode->SaveSvg(currentRow, path);
             SetStatus("Generated and saved: " + path);
+
+            if (AskDetails(code))
+                SetStatus("Details for " + code + " are ready. Click Save... to write them to Product.txt.");
+            else
+                SetStatus("Barcode generated, but no product details yet (use Details...).");
         }
         catch (Exception^ ex)
         {
             Ui::Warn("Cannot generate", ex->Message);
+        }
+    }
+
+    // Re-opens the details form for the barcode in the box
+    void OnDetails(Object^ sender, EventArgs^ e)
+    {
+        try
+        {
+            String^ code = txtPayload->Text->Trim();
+            if (!Code39::IsValidPayload(code))
+                throw gcnew ArgumentException("Enter a valid 6-digit barcode first (first digit not 0).");
+
+            if (AskDetails(code))
+                SetStatus("Details for " + code + " are ready. Click Save... to write them to Product.txt.");
+        }
+        catch (Exception^ ex)
+        {
+            Ui::Warn("Product details", ex->Message);
         }
     }
 
@@ -254,6 +470,16 @@ private:
             String^ code = txtPayload->Text->Trim();
             currentRow = barcode->Encode(code);
             ShowRow(currentRow);
+
+            // a barcode is saved together with the product it stands for
+            if (details == nullptr || details->Barcode != code)
+            {
+                if (!AskDetails(code))
+                {
+                    SetStatus("Not saved: product details are needed to map the barcode to a product.");
+                    return;
+                }
+            }
 
             SaveFileDialog^ dlg = gcnew SaveFileDialog();
             dlg->Filter = "SVG barcode (*.svg)|*.svg|PNG image (*.png)|*.png";
@@ -275,7 +501,8 @@ private:
             {
                 barcode->SaveSvg(currentRow, dlg->FileName);
             }
-            SetStatus("Saved: " + dlg->FileName);
+
+            RegisterProduct(dlg->FileName);
         }
         catch (Exception^ ex)
         {
@@ -303,7 +530,10 @@ private:
             currentRow = row;
             txtPayload->Text = decoded;
             ShowRow(currentRow);
-            SetStatus("Loaded " + Path::GetFileName(dlg->FileName) + " - decoded: " + decoded);
+
+            Product^ known = registry->FindByBarcode(decoded);
+            SetStatus("Loaded " + Path::GetFileName(dlg->FileName) + " - decoded: " + decoded +
+                ((known == nullptr) ? "  (not in Product.txt yet)" : "  (product " + known->Acronym + ")"));
         }
         catch (Exception^ ex)
         {
@@ -1040,7 +1270,14 @@ private:
 
     void OnBarcode(Object^ sender, EventArgs^ e)
     {
-        ShowForm(screens->CreateBarcodeScreen());
+        try
+        {
+            ShowForm(screens->CreateBarcodeScreen());
+        }
+        catch (Exception^ ex)
+        {
+            Ui::Warn("Cannot open barcode screen", ex->Message);
+        }
     }
 
     // Manager action: every paid order becomes archived
