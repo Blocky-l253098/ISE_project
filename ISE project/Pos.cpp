@@ -1,8 +1,8 @@
 // =============================================================================
 // Pos.cpp - composition root: builds the objects and starts the program
 //   PosFactory is the ONLY place that names concrete classes. To change a policy
-//   (stock rule, bill layout, payment methods, units, camera ...) change one line
-//   here; nothing else in the program is touched.
+//   (stock rule, payment methods, units, camera, files ...) change one line here;
+//   nothing else in the program is touched.
 // =============================================================================
 
 #include "Common.h"
@@ -10,8 +10,11 @@
 #include "Domain.h"
 #include "Persistence.h"
 #include "Services.h"
+#include "ManagerServices.h"
+#include "Pdf.h"
 #include "Camera.h"
 #include "Screens.h"
+#include "ManagerScreens.h"
 
 public ref class PosFactory : public IScreenFactory
 {
@@ -32,6 +35,20 @@ private:
         return payments;
     }
 
+    // The data files
+    ProductStore^ CreateProducts() { return gcnew ProductStore(Files::ProductFile, CreateUnits()); }
+    FileCategoryRepository^ CreateCategories() { return gcnew FileCategoryRepository(Files::CategoryFile); }
+    FileSeasonRepository^ CreateSeasons() { return gcnew FileSeasonRepository(Files::SeasonFile); }
+    FileOrderRepository^ CreateOrders() { return gcnew FileOrderRepository(Files::OrderFile); }
+    FileOrderDetailRepository^ CreateDetails() { return gcnew FileOrderDetailRepository(Files::OrderDetailFile); }
+    FileBillRepository^ CreateBills() { return gcnew FileBillRepository(Files::BillFile, Files::BillDetailFile); }
+    FileApprovalRepository^ CreateApprovals() { return gcnew FileApprovalRepository(Files::ApprovalFile); }
+
+    IPdfExporter^ CreateExporter()
+    {
+        return gcnew SimplePdfExporter();
+    }
+
     // Business rules. Stock: LessThanAvailableRule (as the requirement says)
     // or UpToAvailableRule (the last unit may be sold too).
     OrderPolicies^ CreatePolicies()
@@ -39,61 +56,124 @@ private:
         return gcnew OrderPolicies(
             gcnew LessThanAvailableRule(),
             gcnew ProductFilePricing(),
-            CreatePayments());
+            CreatePayments(),
+            gcnew SeasonCalendar(CreateSeasons()));
     }
 
-    // Bill.txt layout: OneLinePerBillFormat or OneLinePerProductFormat
-    IBillFormat^ CreateBillFormat()
-    {
-        return gcnew OneLinePerBillFormat();
-    }
-
-    ProductStore^ CreateProducts()
-    {
-        return gcnew ProductStore(Files::ProductFile, CreateUnits());
-    }
-
+    // No camera (or a camera that cannot be opened): the screens still open and the
+    // barcode number can be typed (or a USB scanner can be used) instead
     ScannerControl^ CreateScanner()
     {
-        return gcnew ScannerControl(gcnew CameraScanner(), gcnew Barcode());
+        IFrameSource^ source = nullptr;
+        String^ problem = nullptr;
+        try
+        {
+            source = gcnew CameraScanner();
+        }
+        catch (Exception^ ex)
+        {
+            problem = ex->Message;
+        }
+
+        if (source == nullptr)
+            source = gcnew NoCamera();
+
+        ScannerControl^ scanner = gcnew ScannerControl(source, gcnew Barcode());
+        if (problem != nullptr)
+            scanner->ShowMessage(problem + " Type the barcode number below.");
+        return scanner;
     }
 
     IOrderWorkflow^ CreateWorkflow(ProductStore^ store)
     {
-        return gcnew OrderService(store, store,
-            gcnew FileOrderRepository(Files::OrderFile),
-            gcnew FileOrderDetailRepository(Files::OrderDetailFile),
-            gcnew FileBillRepository(Files::BillFile, CreateBillFormat()),
-            CreatePolicies(),
-            gcnew SystemClock());
+        FileBillRepository^ bills = CreateBills();
+        OrderStores^ stores = gcnew OrderStores(CreateOrders(), CreateDetails(), bills, bills, CreateApprovals());
+        return gcnew OrderService(store, store, stores, CreatePolicies(), gcnew SystemClock());
     }
 
-public:
-    IOrderArchiver^ CreateArchiver()
+    ICategoryService^ CreateCategoryService()
     {
-        return gcnew OrderArchiver(gcnew FileOrderRepository(Files::OrderFile));
+        return gcnew CategoryService(CreateCategories());
     }
 
-    virtual Form^ CreateOrderScreen()
+    IProductManager^ CreateProductManager(ProductStore^ store)
+    {
+        return gcnew ProductService(store, store, store, CreateUnits(), CreateCategories());
+    }
+
+    Form^ CreateOrderScreen(bool openFirst)
     {
         // products first: a bad Product.txt is reported before the camera starts
         ProductStore^ store = CreateProducts();
         IOrderWorkflow^ workflow = CreateWorkflow(store);
         ScannerControl^ scanner = CreateScanner();
-        return gcnew OrderForm(store, workflow, scanner);
+        return gcnew OrderForm(store, workflow, scanner, CreateExporter(), openFirst);
     }
 
-    virtual Form^ CreateProductScreen()
+    Form^ CreateProductScreen()
     {
         ProductStore^ store = CreateProducts();
         ScannerControl^ scanner = CreateScanner();
         return gcnew ProductForm(store, scanner);
     }
 
-    virtual Form^ CreateBarcodeScreen()
+public:
+    // Manager login. For now one fixed account; change it here (or write a class that
+    // reads users from a file or a database) without touching any screen.
+    IAuthenticator^ CreateAuthenticator()
     {
-        // the store lets the barcode screen add / update products in Product.txt
-        return gcnew BarcodeForm(gcnew Barcode(), CreateProducts());
+        return gcnew FixedCredentialAuthenticator("admin", "admin");
+    }
+
+    IOrderArchiver^ CreateArchiver()
+    {
+        return gcnew OrderArchiver(CreateOrders());
+    }
+
+    // The main menu asks for a screen by name
+    virtual Form^ Create(String^ screen)
+    {
+        if (screen == ScreenNames::Order)
+            return CreateOrderScreen(false);
+
+        if (screen == ScreenNames::OpenOrder)
+            return CreateOrderScreen(true);
+
+        if (screen == ScreenNames::Product)
+            return CreateProductScreen();
+
+        if (screen == ScreenNames::PrintBill)
+            return gcnew BillListForm(CreateBills(), CreateExporter());
+
+        if (screen == ScreenNames::AddProduct)
+        {
+            ProductStore^ store = CreateProducts();
+            return gcnew ProductEditForm(CreateProductManager(store), CreateCategoryService(), gcnew Barcode(), nullptr);
+        }
+
+        if (screen == ScreenNames::Inventory)
+        {
+            ProductStore^ store = CreateProducts();
+            return gcnew InventoryForm(CreateProductManager(store), CreateCategoryService(), gcnew Barcode());
+        }
+
+        if (screen == ScreenNames::Categories)
+            return gcnew CategoryForm(CreateCategoryService());
+
+        if (screen == ScreenNames::Seasons)
+            return gcnew SeasonForm(gcnew SeasonService(CreateSeasons()));
+
+        if (screen == ScreenNames::Approvals)
+            return gcnew ApprovalForm(gcnew ApprovalService(CreateApprovals(), CreateOrders()));
+
+        if (screen == ScreenNames::Reports)
+        {
+            ProductStore^ store = CreateProducts();
+            return gcnew ReportForm(gcnew ReportService(CreateOrders(), CreateDetails(), CreateBills(), store),
+                CreateExporter());
+        }
+
+        throw gcnew ArgumentException("Unknown screen: " + screen);
     }
 };
 
@@ -104,6 +184,6 @@ int main(array<String^>^ args)
     Application::SetCompatibleTextRenderingDefault(false);
 
     PosFactory^ factory = gcnew PosFactory();
-    Application::Run(gcnew MenuForm(factory, factory->CreateArchiver()));
+    Application::Run(gcnew MenuForm(factory, factory->CreateArchiver(), factory->CreateAuthenticator()));
     return 0;
 }

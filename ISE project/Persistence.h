@@ -1,11 +1,12 @@
 #pragma once
 
 // =============================================================================
-// Persistence.h - the .txt files: Product.txt, Order.txt, OrderDetail.txt, Bill.txt
+// Persistence.h - the .txt files:
+//   Product.txt, PCategory.txt, Seasons.txt, Order.txt, OrderDetail.txt,
+//   Bill.txt, BillDetail.txt, Approval.txt
 //   Responsibility : reading and writing the data files, nothing else
 //   Depends on     : Common.h, Domain.h (implements its repository interfaces)
-//   Extension      : a database = new classes implementing the same interfaces;
-//                    a different Bill.txt layout = a new IBillFormat
+//   Extension      : a database = new classes implementing the same interfaces
 // =============================================================================
 
 #include "Common.h"
@@ -14,7 +15,7 @@
 // ---------------------------------------------------------------------------
 // Product.txt
 // ---------------------------------------------------------------------------
-public ref class ProductStore : public IProductLookup, public IStockWriter, public IProductRegistry
+public ref class ProductStore : public IProductLookup, public IStockWriter, public IProductList, public IProductAdder
 {
 private:
     String^ path;
@@ -47,7 +48,7 @@ public:
     }
 
     // Reads Product.txt. A bad line stops the loading with a message that names it
-    // (skipping it would lose it the next time the stock is saved).
+    // (skipping it would lose it the next time the products are saved).
     void Load()
     {
         products = gcnew List<Product^>();
@@ -56,7 +57,7 @@ public:
         warning = FindDuplicate();
     }
 
-    // Writes the current stock back to Product.txt
+    // Writes all products back (this also moves an old Product.txt to the new layout)
     virtual void Save()
     {
         List<String^>^ lines = gcnew List<String^>();
@@ -65,61 +66,27 @@ public:
         RecordFile::WriteLines(path, lines);
     }
 
-    // ---- IProductRegistry: products added from the barcode screen ----
-
-    virtual array<String^>^ UnitNames()
+    virtual List<Product^>^ All()
     {
-        return units->ToArray();
+        return products;
     }
 
-    // Throws when the details are invalid or the acronym already belongs to another product
-    virtual void Check(Product^ product)
+    virtual void Add(Product^ product)
     {
-        product->Validate(units);
-
-        for each(Product ^ other in products)
-        {
-            if (other->Barcode != product->Barcode && other->Acronym == product->Acronym)
-                throw gcnew ArgumentException("Acronym " + product->Acronym +
-                    " is already used by product " + other->Barcode + ".");
-        }
-    }
-
-    // New barcode -> a new line at the end of Product.txt (next free product id).
-    // Known barcode -> its line is updated (the product id stays the same).
-    virtual bool Register(Product^ product)
-    {
-        Load();                                 // work on what Product.txt holds right now
-        Check(product);
-
-        Product^ existing = FindByBarcode(product->Barcode);
-        bool isNew = (existing == nullptr);
-
-        if (isNew)
-        {
-            int highest = 0;
-            for each(Product ^ p in products)
-            {
-                if (p->Id > highest)
-                    highest = p->Id;
-            }
-            product->Id = highest + 1;
-            products->Add(product);
-        }
-        else
-        {
-            existing->Acronym = product->Acronym;
-            existing->Name = product->Name;
-            existing->Unit = product->Unit;
-            existing->Price = product->Price;
-            existing->Tax = product->Tax;
-            existing->Discount = product->Discount;
-            existing->Quantity = product->Quantity;
-            existing->BarcodeFile = product->BarcodeFile;
-        }
-
+        products->Add(product);
         Save();
-        return isNew;
+    }
+
+    // Highest product id + 1
+    virtual int NextId()
+    {
+        int highest = 0;
+        for each(Product ^ p in products)
+        {
+            if (p->Id > highest)
+                highest = p->Id;
+        }
+        return highest + 1;
     }
 
     virtual Product^ FindByBarcode(String^ barcode)
@@ -143,6 +110,20 @@ public:
                 return p;
         }
         return nullptr;
+    }
+
+    // For the "Find product" window: an empty text gives every product
+    virtual List<Product^>^ Search(String^ text)
+    {
+        List<Product^>^ found = gcnew List<Product^>();
+        String^ lower = text->Trim()->ToLower();
+        for each(Product ^ p in products)
+        {
+            if (lower->Length == 0 || p->Barcode->Contains(lower) ||
+                p->Acronym->ToLower()->Contains(lower) || p->Name->ToLower()->Contains(lower))
+                found->Add(p);
+        }
+        return found;
     }
 
     // Where the products came from (shown when something does not match)
@@ -171,6 +152,105 @@ public:
         if (warning != nullptr)
             text += "  WARNING: " + warning;
         return text;
+    }
+};
+
+// ---------------------------------------------------------------------------
+// PCategory.txt
+// ---------------------------------------------------------------------------
+public ref class FileCategoryRepository : public ICategoryRepository
+{
+private:
+    String^ path;
+
+    void SaveAll(List<ProductCategory^>^ all)
+    {
+        List<String^>^ lines = gcnew List<String^>();
+        for each(ProductCategory ^ category in all)
+            lines->Add(category->ToLine());
+        RecordFile::WriteLines(path, lines);
+    }
+
+public:
+    FileCategoryRepository(String^ path)
+    {
+        this->path = path;
+    }
+
+    virtual List<ProductCategory^>^ FindAll()
+    {
+        List<ProductCategory^>^ all = gcnew List<ProductCategory^>();
+        for each(String ^ line in RecordFile::ReadLines(path))
+            all->Add(ProductCategory::FromLine(line));
+        return all;
+    }
+
+    virtual ProductCategory^ FindById(String^ id)
+    {
+        for each(ProductCategory ^ category in FindAll())
+        {
+            if (category->Id == id)
+                return category;
+        }
+        return nullptr;
+    }
+
+    virtual void Add(ProductCategory^ category)
+    {
+        RecordFile::Append(path, category);
+    }
+
+    virtual void Update(ProductCategory^ category)
+    {
+        List<ProductCategory^>^ all = FindAll();
+        for (int i = 0; i < all->Count; i++)
+        {
+            if (all[i]->Id == category->Id)
+                all[i] = category;
+        }
+        SaveAll(all);
+    }
+};
+
+// ---------------------------------------------------------------------------
+// Seasons.txt
+// ---------------------------------------------------------------------------
+public ref class FileSeasonRepository : public ISeasonRepository
+{
+private:
+    String^ path;
+
+public:
+    FileSeasonRepository(String^ path)
+    {
+        this->path = path;
+    }
+
+    virtual List<Season^>^ FindAll()
+    {
+        List<Season^>^ all = gcnew List<Season^>();
+        for each(String ^ line in RecordFile::ReadLines(path))
+            all->Add(Season::FromLine(line));
+        return all;
+    }
+
+    virtual void Add(Season^ season)
+    {
+        RecordFile::Append(path, season);
+    }
+
+    virtual void SetActive(int index, bool active)
+    {
+        List<Season^>^ all = FindAll();
+        if (index < 0 || index >= all->Count)
+            throw gcnew ArgumentException("Select a season first.");
+
+        all[index]->Active = active;
+
+        List<String^>^ lines = gcnew List<String^>();
+        for each(Season ^ season in all)
+            lines->Add(season->ToLine());
+        RecordFile::WriteLines(path, lines);
     }
 };
 
@@ -230,6 +310,21 @@ public:
         SaveAll(all);
     }
 
+    virtual Order^ FindById(String^ id)
+    {
+        for each(Order ^ order in LoadAll())
+        {
+            if (order->Id == id)
+                return order;
+        }
+        return nullptr;
+    }
+
+    virtual List<Order^>^ FindAll()
+    {
+        return LoadAll();
+    }
+
     virtual List<Order^>^ FindByStatus(String^ status)
     {
         List<Order^>^ found = gcnew List<Order^>();
@@ -274,12 +369,19 @@ public:
         this->path = path;
     }
 
+    virtual List<OrderDetail^>^ FindAll()
+    {
+        List<OrderDetail^>^ all = gcnew List<OrderDetail^>();
+        for each(String ^ line in RecordFile::ReadLines(path))
+            all->Add(OrderDetail::FromLine(line));
+        return all;
+    }
+
     virtual List<OrderDetail^>^ FindByOrderId(String^ orderId)
     {
         List<OrderDetail^>^ found = gcnew List<OrderDetail^>();
-        for each(String ^ line in RecordFile::ReadLines(path))
+        for each(OrderDetail ^ detail in FindAll())
         {
-            OrderDetail^ detail = OrderDetail::FromLine(line);
             if (detail->OrderId == orderId)
                 found->Add(detail);
         }
@@ -290,10 +392,10 @@ public:
     virtual void ReplaceFor(String^ orderId, List<OrderDetail^>^ details)
     {
         List<String^>^ lines = gcnew List<String^>();
-        for each(String ^ line in RecordFile::ReadLines(path))
+        for each(OrderDetail ^ detail in FindAll())
         {
-            if (OrderDetail::FromLine(line)->OrderId != orderId)
-                lines->Add(line);
+            if (detail->OrderId != orderId)
+                lines->Add(detail->ToLine());
         }
         for each(OrderDetail ^ detail in details)
             lines->Add(detail->ToLine());
@@ -302,104 +404,154 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// Bill.txt: the layout of the lines is a separate, replaceable strategy
+// Bill.txt and BillDetail.txt (append only: a bill is never changed afterwards)
 // ---------------------------------------------------------------------------
-public interface class IBillFormat
-{
-    List<String^>^ ToLines(Bill^ bill);
-};
-
-// One bill = one line; the products are listed with ',' between them
-// (acronyms, prices, discounts and quantities in the same order)
-public ref class OneLinePerBillFormat : public IBillFormat
-{
-public:
-    virtual List<String^>^ ToLines(Bill^ bill)
-    {
-        List<String^>^ acronyms = gcnew List<String^>();
-        List<String^>^ prices = gcnew List<String^>();
-        List<String^>^ discounts = gcnew List<String^>();
-        List<String^>^ quantities = gcnew List<String^>();
-
-        for each(OrderItem ^ line in bill->Lines->Items)
-        {
-            acronyms->Add(line->Item->Acronym);
-            prices->Add(Fmt::Number(line->Item->Price));
-            discounts->Add(Fmt::Number(line->Item->Discount));
-            quantities->Add(Fmt::Number(line->Quantity));
-        }
-
-        List<String^>^ lines = gcnew List<String^>();
-        lines->Add(String::Join(" ", gcnew array<String^>
-        {
-            bill->Id, Fmt::Pack(bill->Source->CustomerName), bill->Source->Id,
-                String::Join(",", acronyms->ToArray()),
-                String::Join(",", prices->ToArray()),
-                String::Join(",", discounts->ToArray()),
-                String::Join(",", quantities->ToArray()),
-                Fmt::Number(bill->Lines->TotalWithoutTax()),
-                Fmt::Number(bill->Lines->TotalTax()),
-                Fmt::Number(bill->Lines->TotalDiscount()),
-                Fmt::Number(bill->Lines->Payable()),
-                bill->Source->Status
-        }));
-        return lines;
-    }
-};
-
-// Alternative: one line per product (same bill id on every line, totals repeated)
-public ref class OneLinePerProductFormat : public IBillFormat
-{
-public:
-    virtual List<String^>^ ToLines(Bill^ bill)
-    {
-        List<String^>^ lines = gcnew List<String^>();
-
-        for each(OrderItem ^ line in bill->Lines->Items)
-        {
-            lines->Add(String::Join(" ", gcnew array<String^>
-            {
-                bill->Id, Fmt::Pack(bill->Source->CustomerName), bill->Source->Id,
-                    line->Item->Acronym,
-                    Fmt::Number(line->Item->Price),
-                    Fmt::Number(line->Item->Discount),
-                    Fmt::Number(line->Quantity),
-                    Fmt::Number(bill->Lines->TotalWithoutTax()),
-                    Fmt::Number(bill->Lines->TotalTax()),
-                    Fmt::Number(bill->Lines->TotalDiscount()),
-                    Fmt::Number(bill->Lines->Payable()),
-                    bill->Source->Status
-            }));
-        }
-        return lines;
-    }
-};
-
-public ref class FileBillRepository : public IBillRepository
+public ref class FileBillRepository : public IBillWriter, public IBillReader
 {
 private:
     literal int IdDigits = 9;
 
-    String^ path;
-    IBillFormat^ format;
+    String^ billPath;
+    String^ detailPath;
 
 public:
-    FileBillRepository(String^ path, IBillFormat^ format)
+    FileBillRepository(String^ billPath, String^ detailPath)
     {
-        this->path = path;
-        this->format = format;
+        this->billPath = billPath;
+        this->detailPath = detailPath;
     }
 
-    // 9 digit running number
+    // 9 digit running number: the highest bill id in the file + 1, so it never repeats
     virtual String^ NextId()
     {
-        int next = RecordFile::NextNumber(path, IdDigits);
+        int next = RecordFile::NextNumber(billPath, IdDigits);
         return next.ToString()->PadLeft(IdDigits, L'0');
     }
 
     virtual void Add(Bill^ bill)
     {
-        for each(String ^ line in format->ToLines(bill))
-            RecordFile::AppendLine(path, line);
+        RecordFile::Append(billPath, bill->ToRecord());
+        for each(BillDetailRecord ^ detail in bill->ToDetailRecords())
+            RecordFile::Append(detailPath, detail);
+    }
+
+    // Lines of an older Bill.txt layout are skipped
+    virtual List<BillRecord^>^ FindAll()
+    {
+        List<BillRecord^>^ all = gcnew List<BillRecord^>();
+        for each(String ^ line in RecordFile::ReadLines(billPath))
+        {
+            BillRecord^ record = BillRecord::TryFromLine(line);
+            if (record != nullptr)
+                all->Add(record);
+        }
+        return all;
+    }
+
+    // The last bill written for an order (an edited order has more than one)
+    virtual BillRecord^ FindLatestByOrder(String^ orderId)
+    {
+        BillRecord^ latest = nullptr;
+        for each(BillRecord ^ record in FindAll())
+        {
+            if (record->OrderId == orderId)
+                latest = record;
+        }
+        return latest;
+    }
+
+    virtual List<BillDetailRecord^>^ FindDetails(String^ billId)
+    {
+        List<BillDetailRecord^>^ found = gcnew List<BillDetailRecord^>();
+        for each(String ^ line in RecordFile::ReadLines(detailPath))
+        {
+            BillDetailRecord^ detail = BillDetailRecord::TryFromLine(line);
+            if (detail != nullptr && detail->BillId == billId)
+                found->Add(detail);
+        }
+        return found;
+    }
+};
+
+// ---------------------------------------------------------------------------
+// Approval.txt: requests to edit a paid order and the manager's answer
+// ---------------------------------------------------------------------------
+public ref class FileApprovalRepository : public IApprovalRepository
+{
+private:
+    String^ path;
+
+    List<EditApproval^>^ LoadAll()
+    {
+        List<EditApproval^>^ all = gcnew List<EditApproval^>();
+        for each(String ^ line in RecordFile::ReadLines(path))
+            all->Add(EditApproval::FromLine(line));
+        return all;
+    }
+
+    void SaveAll(List<EditApproval^>^ all)
+    {
+        List<String^>^ lines = gcnew List<String^>();
+        for each(EditApproval ^ approval in all)
+            lines->Add(approval->ToLine());
+        RecordFile::WriteLines(path, lines);
+    }
+
+public:
+    FileApprovalRepository(String^ path)
+    {
+        this->path = path;
+    }
+
+    virtual String^ StateOf(String^ orderId)
+    {
+        for each(EditApproval ^ approval in LoadAll())
+        {
+            if (approval->OrderId == orderId)
+                return approval->State;
+        }
+        return ApprovalState::None;
+    }
+
+    // One record per order: a new request replaces the old answer
+    virtual void Request(String^ orderId, DateTime when)
+    {
+        List<EditApproval^>^ all = LoadAll();
+        EditApproval^ request = gcnew EditApproval(orderId, Fmt::DateText(when), Fmt::TimeText(when), ApprovalState::Pending);
+
+        bool replaced = false;
+        for (int i = 0; i < all->Count; i++)
+        {
+            if (all[i]->OrderId == orderId)
+            {
+                all[i] = request;
+                replaced = true;
+            }
+        }
+        if (!replaced)
+            all->Add(request);
+        SaveAll(all);
+    }
+
+    virtual void SetState(String^ orderId, String^ state)
+    {
+        List<EditApproval^>^ all = LoadAll();
+        for each(EditApproval ^ approval in all)
+        {
+            if (approval->OrderId == orderId)
+                approval->State = state;
+        }
+        SaveAll(all);
+    }
+
+    virtual List<EditApproval^>^ FindByState(String^ state)
+    {
+        List<EditApproval^>^ found = gcnew List<EditApproval^>();
+        for each(EditApproval ^ approval in LoadAll())
+        {
+            if (approval->State == state)
+                found->Add(approval);
+        }
+        return found;
     }
 };
