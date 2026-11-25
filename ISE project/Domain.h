@@ -915,8 +915,6 @@ public interface class IBillReader
     List<BillDetailRecord^>^ FindDetails(String^ billId);
 };
 
-
-
 public interface class IApprovalRepository
 {
     String^ StateOf(String^ orderId);                       // an ApprovalState value

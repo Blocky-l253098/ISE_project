@@ -113,6 +113,24 @@ public:
     }
 };
 
+// Used when there is no camera: the screens still open and work with typed barcode numbers
+public ref class NoCamera : public IFrameSource
+{
+public:
+    virtual void Start()
+    {
+    }
+
+    virtual void Stop()
+    {
+    }
+
+    virtual Bitmap^ GetFrame()
+    {
+        return nullptr;
+    }
+};
+
 // Reusable control: live preview + barcode detection.
 // Put it on any form and subscribe to BarcodeScanned.
 public ref class ScannerControl : public UserControl
@@ -169,6 +187,12 @@ public:
     {
         timer->Stop();
         camera->Stop();
+    }
+
+    // Text on the green line under the preview (for example "no camera")
+    void ShowMessage(String^ text)
+    {
+        info->Text = text;
     }
 
     // Stops / restarts reading (the camera stays on). Use around dialogs.
