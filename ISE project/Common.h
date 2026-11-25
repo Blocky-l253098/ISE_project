@@ -48,6 +48,28 @@ public:
         return Double::TryParse(text, NumberStyles::Float, CultureInfo::InvariantCulture, value);
     }
 
+    // 2026-11-21 (dates inside files)
+    static String^ DateText(DateTime value)
+    {
+        return value.ToString("yyyy-MM-dd", CultureInfo::InvariantCulture);
+    }
+
+    // 13:45:09 (times inside files)
+    static String^ TimeText(DateTime value)
+    {
+        return value.ToString("HH:mm:ss", CultureInfo::InvariantCulture);
+    }
+
+    static DateTime ParseDate(String^ text)
+    {
+        return DateTime::ParseExact(text, "yyyy-MM-dd", CultureInfo::InvariantCulture);
+    }
+
+    static DateTime ParseDateTime(String^ date, String^ time)
+    {
+        return DateTime::ParseExact(date + " " + time, "yyyy-MM-dd HH:mm:ss", CultureInfo::InvariantCulture);
+    }
+
     // Fields are separated by spaces, so spaces inside a value become '_'. Empty -> "-"
     static String^ Pack(String^ text)
     {
@@ -134,6 +156,26 @@ public:
     {
         String ^ get() { return Path::Combine(Folder, "Bill.txt"); }
     }
+
+    static property String^ BillDetailFile
+    {
+        String ^ get() { return Path::Combine(Folder, "BillDetail.txt"); }
+    }
+
+    static property String^ CategoryFile
+    {
+        String ^ get() { return Path::Combine(Folder, "PCategory.txt"); }
+    }
+
+    static property String^ SeasonFile
+    {
+        String ^ get() { return Path::Combine(Folder, "Seasons.txt"); }
+    }
+
+    static property String^ ApprovalFile
+    {
+        String ^ get() { return Path::Combine(Folder, "Approval.txt"); }
+    }
 };
 
 // The four order statuses of the requirement
@@ -144,6 +186,13 @@ public:
     literal String^ OnHold = "on-hold";
     literal String^ Paid = "paid";
     literal String^ Archived = "archived";
+};
+
+// Payment mode names the program itself has to know (reports: cash sales)
+public ref class PaymentNames abstract sealed
+{
+public:
+    literal String^ Cash = "cash";
 };
 
 // A small set of allowed names (product units ...). Adding a name never changes
